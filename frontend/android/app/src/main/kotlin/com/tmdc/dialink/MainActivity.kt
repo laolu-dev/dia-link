@@ -1,4 +1,4 @@
-package com.tmdc.dialink.dialink
+package com.tmdc.dialink
 
 import io.flutter.embedding.android.FlutterActivity
 
