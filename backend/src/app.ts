@@ -16,6 +16,6 @@ app.use(express.json());
 app.use("/accounts", userRouter);
 app.use("/appointments", appointmentRouter);
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+app.listen(port, "0.0.0.0", () => {
+    console.log(`Server running on ${port}`);
 });

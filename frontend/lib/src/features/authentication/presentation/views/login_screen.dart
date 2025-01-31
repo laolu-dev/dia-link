@@ -1,20 +1,24 @@
-import 'package:dialink/src/config/router/route_names.dart';
-import 'package:dialink/src/core/core.dart';
-import 'package:dialink/src/core/utils/extensions.dart';
-import 'package:dialink/src/widgets/custom_textfield.dart';
-import 'package:dialink/src/widgets/custom_scaffold.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginScreen extends StatefulWidget {
+import 'package:dialink/src/config/router/route_names.dart';
+import 'package:dialink/src/core/core.dart';
+
+import 'package:dialink/src/widgets/custom_textfield.dart';
+import 'package:dialink/src/widgets/custom_scaffold.dart';
+
+import 'package:dialink/src/features/authentication/presentation/controller/authentication_controller.dart';
+
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
 
@@ -31,6 +35,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = ref.watch(authenticationControllerProvider);
+
+    ref.listen(
+      authenticationControllerProvider,
+      (_, state) {
+        state.maybeWhen(
+          data: (value) {
+            if (value != null) {
+              context.router.pushNamedAndRemoveUntil(
+                RouteName.home,
+                (route) => false,
+                arguments: value,
+              );
+            }
+          },
+          error: (e, st) {
+            AppConstants.instance.showError(e.toString());
+          },
+          orElse: () {},
+        );
+      },
+    );
+
     return AppScaffold(
       child: Form(
         key: _form,
@@ -62,11 +89,13 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: password,
             ),
             16.0.verticalSpacing,
-            TextButton(
-              onPressed: () => context.router
-                  .pushNamedAndRemoveUntil(RouteName.home, (route) => false),
-              child: Text("Login"),
-            ),
+            switch (controller.isLoading) {
+              true => CircularProgressIndicator(),
+              _ => TextButton(
+                  onPressed: _login,
+                  child: Text("Create Account"),
+                ),
+            },
             Spacer(),
             Text.rich(
               TextSpan(
@@ -90,5 +119,16 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  void _login() {
+    Map<String, dynamic> payload = {
+      "email": email.text,
+      "password": password.text
+    };
+
+    if (_form.currentState!.validate()) {
+      ref.read(authenticationControllerProvider.notifier).login(payload);
+    }
   }
 }

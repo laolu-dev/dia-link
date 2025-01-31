@@ -1,22 +1,23 @@
 import 'package:dialink/src/core/core.dart';
 import 'package:dialink/src/core/utils/enums.dart';
-import 'package:dialink/src/core/utils/extensions.dart';
 import 'package:dialink/src/features/book-appointment/presentation/controller/appointment_controller.dart';
 import 'package:dialink/src/widgets/custom_textfield.dart';
 import 'package:dialink/src/widgets/custom_dropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
-class BookAppointmentDate extends StatefulWidget {
-  const BookAppointmentDate({super.key});
+class BookAppointmentDate extends ConsumerStatefulWidget {
+  const BookAppointmentDate({super.key, required this.userId});
+  final String userId;
 
   @override
-  State<BookAppointmentDate> createState() => _BookAppointmentDateState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _BookAppointmentDateState();
 }
 
-class _BookAppointmentDateState extends State<BookAppointmentDate> {
+class _BookAppointmentDateState extends ConsumerState<BookAppointmentDate> {
   final TextEditingController name = TextEditingController();
   final TextEditingController age = TextEditingController();
   final TextEditingController gender = TextEditingController();
@@ -47,8 +48,6 @@ class _BookAppointmentDateState extends State<BookAppointmentDate> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<AppointmentNotifier>(context, listen: false);
-
     return SafeArea(
       child: SingleChildScrollView(
         child: Form(
@@ -91,6 +90,7 @@ class _BookAppointmentDateState extends State<BookAppointmentDate> {
                           label: "Name",
                           hint: "Full name",
                           controller: name,
+                          
                         ),
                       ),
                       Flexible(
@@ -163,21 +163,7 @@ class _BookAppointmentDateState extends State<BookAppointmentDate> {
                   ),
                   16.0.verticalSpacing,
                   TextButton(
-                    onPressed: () {
-                      final Map<String, dynamic> payload = {
-                        "patientName": name.text,
-                        "patientAge": age.text,
-                        "patientGender": gender.text,
-                        "dob": "",
-                        "hospitalName": hospital.text,
-                        "testType": testType.text,
-                        "nextOfKin": nextOfKin.text,
-                        "allergies": allergies,
-                        "medicalHistory": history.text,
-                      };
-                      controller.getADate(payload);
-                      context.router.pop();
-                    },
+                    onPressed: _createAppointment,
                     child: Text("Get Date"),
                   )
                 ],
@@ -230,5 +216,26 @@ class _BookAppointmentDateState extends State<BookAppointmentDate> {
         12.0.verticalSpacing
       ],
     );
+  }
+
+  void _createAppointment() {
+    Map<String, dynamic> payload = {
+      "userId": widget.userId,
+      "name": name.text,
+      "age": age.text,
+      "gender": gender.text,
+      "dob": dob.value.toIso8601String(),
+      "hospitalName": hospital.text,
+      "nameOfTest": testType.text,
+      "medicalHistory": history.text,
+    };
+    if (nextOfKin.text.isNotEmpty) {
+      payload.addAll({"nextOfKin": nextOfKin.text});
+    }
+    if (allergies.text.isNotEmpty) {
+      payload.addAll({"allergies": allergies.text});
+    }
+    ref.read(appointmentControllerProvider.notifier).createAppointment(payload);
+    context.router.pop();
   }
 }

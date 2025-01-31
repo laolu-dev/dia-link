@@ -1,25 +1,25 @@
 import 'package:dialink/src/config/config.dart';
 import 'package:dialink/src/core/core.dart';
 import 'package:flutter/material.dart';
-import 'package:talker_logger/talker_logger.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 extension ObjectOrNull on Object? {
   void printLog({Object? msg, LogLevel? level}) {
     switch (level) {
       case LogLevel.info:
-        AppConstants.instance.logging.info(msg);
+        AppConstants.instance.talker.info(msg);
         break;
 
       case LogLevel.error:
-        AppConstants.instance.logging.error(msg);
+        AppConstants.instance.talker.error(msg);
         break;
 
       case LogLevel.critical:
-        AppConstants.instance.logging.critical(msg);
+        AppConstants.instance.talker.critical(msg);
         break;
 
       default:
-        AppConstants.instance.logging.debug(msg);
+        AppConstants.instance.talker.debug(msg);
     }
   }
 }

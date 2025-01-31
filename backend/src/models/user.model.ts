@@ -18,17 +18,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please provide a password"],
     },
-    gender: {
-        type: String
-    },
-    phoneNumber: {
-        type: String
-    },
-    appointments: {
+    gender: { type: String },
+    phoneNumber: { type: String },
+    appointments: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Appointment",
-        default: [],
-    }
+        ref: "Appointment"
+    }]
 });
 
 const User = mongoose.model("User", userSchema);

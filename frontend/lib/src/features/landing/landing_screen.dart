@@ -1,6 +1,5 @@
 import 'package:dialink/src/config/router/route_names.dart';
 import 'package:dialink/src/core/core.dart';
-import 'package:dialink/src/core/utils/extensions.dart';
 import 'package:dialink/src/widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';

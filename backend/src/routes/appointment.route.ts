@@ -6,6 +6,6 @@ const appointmentRouter = express.Router();
 appointmentRouter.get("/", getAppointments);
 appointmentRouter.post("/confirm", confirmAppointment);
 appointmentRouter.post("/create", createAppointment);
-appointmentRouter.delete("/:id", deleteAppointment);
+appointmentRouter.delete("/delete/:id", deleteAppointment);
 
 export default appointmentRouter;

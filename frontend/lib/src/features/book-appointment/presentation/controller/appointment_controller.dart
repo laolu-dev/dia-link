@@ -1,22 +1,62 @@
-import 'package:dialink/src/core/utils/enums.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class AppointmentNotifier extends ChangeNotifier {
-  String? _error;
-  List<dynamic> _data = [];
-  AppState _state = AppState.data;
+import 'package:dialink/src/features/book-appointment/data/appointment_repository.dart';
+import 'package:dialink/src/features/book-appointment/models/appointment_model.dart';
 
-  AppState get state => _state;
-  List<dynamic> get data => _data;
-  String? get error => _error;
+part 'appointment_controller.g.dart';
 
-  void getADate(Map<String, dynamic> payload) {
-    _state = AppState.loading;
-    notifyListeners();
+@riverpod
+class AppointmentController extends _$AppointmentController {
+  late final AppointmentRepository _repository;
 
-    _data = [..._data, payload];
-
-    _state = AppState.data;
-    notifyListeners();
+  @override
+  FutureOr<String?> build() {
+    _repository = ref.watch(appointmentRepoProvider);
+    return null;
   }
+
+  void createAppointment(Map<String, dynamic> payload) async {
+    state = AsyncLoading();
+
+    final response = await _repository.createAppointment(payload);
+    response.fold(
+      (success) => state = AsyncData(success.message),
+      (exception) => state = AsyncError(exception.message, StackTrace.current),
+    );
+  }
+
+  void confirmAppointment(String id) async {
+    state = AsyncLoading();
+
+    final response = await _repository.confirmAppointment(id, true);
+    response.fold(
+      (success) => state = AsyncData(success.message),
+      (exception) => state = AsyncError(exception.message, StackTrace.current),
+    );
+  }
+
+  void deleteAppointment(String id) async {
+    state = AsyncLoading();
+
+    final response = await _repository.deleteAppointment(id);
+    response.fold(
+      (success) => state = AsyncData(success.message),
+      (exception) => state = AsyncError(exception.message, StackTrace.current),
+    );
+  }
+}
+
+@riverpod
+Future<List<AppointmentModel>?> fetchAppointments(
+  Ref ref, {
+  required String userId,
+}) async {
+  final result =
+      await ref.watch(appointmentRepoProvider).getAppointments(userId);
+
+  return result.fold(
+    (response) => response.data,
+    (error) => throw error,
+  );
 }

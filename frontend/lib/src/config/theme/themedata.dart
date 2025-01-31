@@ -73,7 +73,7 @@ final ThemeData appTheme = ThemeData(
       backgroundColor: WidgetStatePropertyAll(AppColors.primary),
       foregroundColor: WidgetStatePropertyAll(AppColors.white),
       padding: WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       ),
       textStyle: WidgetStatePropertyAll(
         TextStyle(

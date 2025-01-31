@@ -96,7 +96,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
                 data: {
                     id: user._id,
                     name: user.lastName,
-                    jwtToken: generateToken(user.id),
+                    gender: user.gender,
+                    token: generateToken(user.id),
                 }
             });
             return;

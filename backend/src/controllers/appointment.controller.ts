@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from "express";
 
-import { getRandomDate } from "../utils/date-gen";
+import { getRandomDate, formatDate } from "../utils/date-gen";
 import { sendAppointmentDate } from "../utils/send-mail";
 
 import userModel from "../models/user.model";
@@ -47,6 +47,10 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
             return;
         }
 
+        const selectedDate = getRandomDate();
+
+        const { formattedDate, formattedTime } = formatDate(selectedDate);
+
         const appointment = await appointmentModel.create({
             patientName: name,
             age: age,
@@ -57,10 +61,10 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
             nextOfKin: nextOfKinName,
             allergies: allergies,
             history: medicalHistory,
-            appointmentDate: getRandomDate()
+            appointmentDate: selectedDate
         });
 
-        const user = await userModel.findById(userId).populate("appointments");
+        const user = await userModel.findByIdAndUpdate(userId, { $push: { appointments: appointment._id } });
 
         if (!user) {
             res.status(404).json({
@@ -74,16 +78,15 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
             patientName: name,
             test: nameOfTest,
             email: user.email,
-            date: "",
-            time: "",
+            date: formattedDate,
+            time: formattedTime,
             hospitalName: hospitalName,
-            hospitalAddress: "",
+            hospitalAddress: "Some address",
         });
 
         res.status(201).json({
             status: "success",
             message: "Successfully created appointment",
-            data: { appointment },
         });
         return;
 
@@ -94,6 +97,7 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
 
 export const getAppointments = async (req: Request, res: Response): Promise<void> => {
     const { userId } = req.body;
+
     if (!userId) {
         res.status(400).json({
             status: "error",
@@ -102,10 +106,10 @@ export const getAppointments = async (req: Request, res: Response): Promise<void
         return;
     }
 
-    const user = await userModel.findById(userId);
+    // Find user and populate appointments
+    const user = await userModel.findById(userId).populate("appointments");
 
     if (user) {
-        console.log(user);
         res.status(200).json({
             status: "success",
             message: "Successfully fetched appointments.",
@@ -123,71 +127,73 @@ export const getAppointments = async (req: Request, res: Response): Promise<void
 }
 
 export const confirmAppointment = async (req: Request, res: Response): Promise<void> => {
-    const { appointmentId, status } = req.body;
-    if (!appointmentId) {
-        res.status(400).json({
-            status: "error",
-            message: "Provide an appointment id."
-        });
-        return;
-    }
+    try {
+        const { appointmentId, status } = req.body;
 
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { isConfirmed: status });
-    if (appointment) {
-        res.status(200).json({
-            status: "success",
-            message: "Successfully confirmed appointment",
-            data: {
-                id: appointment.id,
-                patientName: appointment.patientName,
-                age: appointment.age,
-                gender: appointment.gender,
-                dob: appointment.dob,
-                allergies: appointment.allergies,
-                nextOfKin: appointment.nextOfKin,
-                hospital: appointment.hospitalName,
-                test: appointment.testName,
-                medicalHistory: appointment.history,
-                availableDate: appointment.appointmentDate,
-                isConfirmed: appointment.isConfirmed,
-            }
-        });
-        return;
-    } else {
-        res.status(404).send({
-            status: "error",
-            message: "No confirmation was made as the appointment does not exist."
-        });
-        return;
-    }
+        if (!appointmentId) {
+            res.status(400).json({
+                status: "error",
+                message: "Provide an appointment id."
+            });
+            return;
+        }
 
+        const appointment = await appointmentModel.findByIdAndUpdate(
+            appointmentId,
+            { isConfirmed: status },
+            { new: true }
+        );
+        
+        if (appointment) {
+            res.status(200).json({
+                status: "success",
+                message: "Successfully confirmed appointment",
+            });
+            return;
+        } else {
+            res.status(404).send({
+                status: "error",
+                message: "No confirmation was made as the appointment does not exist."
+            });
+            return;
+        }
+    } catch (error) {
+        console.error("Error confirming appointment:", error);
+    }
 }
 
 
 export const deleteAppointment = async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-    if (!id) {
-        res.status(400).json({
-            status: "error",
-            message: "Provide an appointment id."
-        });
-        return;
-    }
+    try {
+        const { id } = req.params;
 
-    const appointment = await userModel.findByIdAndDelete(id);
-    if (appointment) {
+        if (!id) {
+            res.status(400).json({
+                status: "error",
+                message: "Provide an appointment id."
+            });
+            return;
+        }
+
+        // Find and delete the appointment
+        const appointment = await appointmentModel.findByIdAndDelete(id);
+
+        if (!appointment) {
+            res.status(404).json({
+                status: "error",
+                message: "No appointment was deleted. It does not exist.",
+            });
+            return;
+        }
+
         res.status(200).json({
             status: "success",
             message: "Successfully deleted appointment.",
         });
         return;
-    } else {
-        res.status(404).send({
-            status: "error",
-            message: "No appointment was deleted. It does not exists"
-        });
-        return;
-    }
 
+    } catch (error) {
+        console.error("Error deleting appointment:", error);
+    }
 }
 

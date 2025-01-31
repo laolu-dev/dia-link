@@ -1,5 +1,3 @@
-enum AppState { data, loading, error }
-
 enum Gender {
   male("Male"),
   female("Female");

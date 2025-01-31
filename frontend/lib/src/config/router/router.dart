@@ -1,12 +1,11 @@
 import 'package:dialink/src/config/router/route_names.dart';
-import 'package:dialink/src/features/authentication/presentation/controller/authentication_controller.dart';
+import 'package:dialink/src/features/authentication/models/user_model.dart';
 import 'package:dialink/src/features/authentication/presentation/views/login_screen.dart';
 import 'package:dialink/src/features/authentication/presentation/views/signup_screen.dart';
-import 'package:dialink/src/features/authentication/presentation/views/verify_email_screen.dart';
+// import 'package:dialink/src/features/authentication/presentation/views/verify_email_screen.dart';
 import 'package:dialink/src/features/book-appointment/presentation/views/home_screen.dart';
 import 'package:dialink/src/features/landing/landing_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class AppRouter {
   AppRouter._();
@@ -18,7 +17,6 @@ class AppRouter {
 
   Route<dynamic>? routes(RouteSettings settings) {
     final arg = settings.arguments;
-    final AuthenticationNotifier authController = AuthenticationNotifier();
 
     switch (settings.name) {
       case RouteName.landing:
@@ -26,30 +24,23 @@ class AppRouter {
 
       case RouteName.signup:
         return MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider.value(
-            value: authController,
-            child: SignupScreen(),
-          ),
+          builder: (context) => SignupScreen(),
         );
 
       case RouteName.login:
         return MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider.value(
-            value: authController,
-            child: LoginScreen(),
-          ),
-        );
-
-      case RouteName.verify:
-        return MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider.value(
-            value: authController,
-            child: VerifyEmailScreen(email: arg as String),
-          ),
+          builder: (context) => LoginScreen(),
         );
 
       case RouteName.home:
-        return MaterialPageRoute(builder: (context) => HomeScreen());
+        return MaterialPageRoute(
+          builder: (context) => HomeScreen(user: arg as UserModel),
+        );
+
+      // case RouteName.verify:
+      //   return MaterialPageRoute(
+      //     builder: (context) => VerifyEmailScreen(email: arg as String),
+      //   );
 
       default:
         return _unknownRoute();
