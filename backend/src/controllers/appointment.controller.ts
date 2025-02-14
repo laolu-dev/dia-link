@@ -36,7 +36,7 @@ export const createAppointment = async (req: Request, res: Response, next: NextF
             });
             return;
         }
-
+        
         // Parse and validate date of birth
         const dateOfBirth = new Date(dob);
         if (isNaN(dateOfBirth.getTime())) {

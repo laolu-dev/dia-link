@@ -10,7 +10,7 @@ part 'dio.g.dart';
 Dio dio(Ref ref) {
   Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://127.0.0.1:3000",
+      baseUrl: "https://dia-link.onrender.com",
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 5),
     ),

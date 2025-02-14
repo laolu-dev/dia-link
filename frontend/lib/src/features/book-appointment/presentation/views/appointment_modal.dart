@@ -90,7 +90,6 @@ class _BookAppointmentDateState extends ConsumerState<BookAppointmentDate> {
                           label: "Name",
                           hint: "Full name",
                           controller: name,
-                          
                         ),
                       ),
                       Flexible(
@@ -228,12 +227,10 @@ class _BookAppointmentDateState extends ConsumerState<BookAppointmentDate> {
       "hospitalName": hospital.text,
       "nameOfTest": testType.text,
       "medicalHistory": history.text,
+      "allergies": allergies.text.isEmpty ? "No allergen" : allergies.text
     };
     if (nextOfKin.text.isNotEmpty) {
       payload.addAll({"nextOfKin": nextOfKin.text});
-    }
-    if (allergies.text.isNotEmpty) {
-      payload.addAll({"allergies": allergies.text});
     }
     ref.read(appointmentControllerProvider.notifier).createAppointment(payload);
     context.router.pop();
